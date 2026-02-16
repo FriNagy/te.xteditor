@@ -51,6 +51,4 @@ te/
 
 The editor handles multiple encodings: UTF-8, UTF-16 LE/BE, UTF-7, Windows ANSI, OEM, and 50+ code pages. Encoding detection happens in `EditLoadFile`, conversion in `EditSaveFile`.
 
-## Documentation
 
-- `te\TE.txt`: Comprehensive feature docs, changelog, keyboard shortcuts, regex syntax, command-line switches
