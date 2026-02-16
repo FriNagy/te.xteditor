@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release-TE|x64">
+      <Configuration>Release-TE</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-TE|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release-TE|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release-TE|x64'">
+    <OutDir>x64\Release\</OutDir>
+    <IntDir>x64\Release-TE\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <EmbedManifest>true</EmbedManifest>
+    <TargetName>TE</TargetName>
+    <GenerateManifest>true</GenerateManifest>
+  </PropertyGroup>
+  <!-- Release-TE x64: UTF-8 -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release-TE|x64'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <OmitFramePointers>true</OmitFramePointers>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;lexilla\lexlib;lexilla\include;scintilla\win32;cmark-gfm\src;cmark-gfm\extensions;webview2\build\native\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BUILD_TE;STATIC_BUILD;SCI_LEXER;NDEBUG;WIN64;_WIN64;_WINDOWS;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ConformanceMode>true</ConformanceMode>
+      <ControlFlowGuard>Guard</ControlFlowGuard>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;shlwapi.lib;imm32.lib;WebView2LoaderStatic.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>webview2\build\native\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkStatus>true</LinkStatus>
+      <LargeAddressAware>true</LargeAddressAware>
+      <SetChecksum>true</SetChecksum>
+      <EnableUAC>true</EnableUAC>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <ResourceCompile>
+      <PreprocessorDefinitions>BUILD_TE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Manifest>
+      <AdditionalManifestFiles>res\TE.exe.manifest</AdditionalManifestFiles>
+      <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <!-- TE Source Files -->
+    <ClCompile Include="src\Dialogs.c" />
+    <ClCompile Include="src\Dlapi.c" />
+    <ClCompile Include="src\Edit.c" />
+    <ClCompile Include="src\Helpers.c" />
+    <ClCompile Include="src\TE.c" />
+    <ClCompile Include="src\Print.cpp" />
+    <ClCompile Include="src\Styles.c" />
+    <!-- Lexilla lexlib -->
+    <ClCompile Include="lexilla\lexlib\Accessor.cxx" />
+    <ClCompile Include="lexilla\lexlib\CharacterCategory.cxx" />
+    <ClCompile Include="lexilla\lexlib\CharacterSet.cxx" />
+    <ClCompile Include="lexilla\lexlib\DefaultLexer.cxx" />
+    <ClCompile Include="lexilla\lexlib\InList.cxx" />
+    <ClCompile Include="lexilla\lexlib\LexAccessor.cxx" />
+    <ClCompile Include="lexilla\lexlib\LexerBase.cxx" />
+    <ClCompile Include="lexilla\lexlib\LexerModule.cxx" />
+    <ClCompile Include="lexilla\lexlib\LexerSimple.cxx" />
+    <ClCompile Include="lexilla\lexlib\PropSetSimple.cxx" />
+    <ClCompile Include="lexilla\lexlib\StyleContext.cxx" />
+    <ClCompile Include="lexilla\lexlib\WordList.cxx" />
+    <!-- Lexilla lexers (nur die benoetigten) -->
+    <ClCompile Include="lexilla\lexers\LexCPP.cxx" />
+    <ClCompile Include="lexilla\lexers\LexSQL.cxx" />
+    <ClCompile Include="lexilla\lexers\LexMake.cxx" />
+    <ClCompile Include="lexilla\lexers\LexBatch.cxx" />
+    <ClCompile Include="lexilla\lexers\LexCPS.cxx" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="lexilla\lexers\LexF2T.cxx" />
+    <ClCompile Include="lexilla\lexers\LexHTML.cxx" />
+    <ClCompile Include="lexilla\lexers\LexJSON.cxx" />
+    <ClCompile Include="lexilla\lexers\LexBasic.cxx" />
+    <ClCompile Include="lexilla\lexers\LexMarkdown.cxx" Condition="$(Configuration.Contains('TE'))" />
+    <!-- Lexilla src -->
+    <ClCompile Include="lexilla\src\Lexilla.cxx" />
+    <!-- Scintilla src -->
+    <ClCompile Include="scintilla\src\AutoComplete.cxx" />
+    <ClCompile Include="scintilla\src\CallTip.cxx" />
+    <ClCompile Include="scintilla\src\CaseConvert.cxx" />
+    <ClCompile Include="scintilla\src\CaseFolder.cxx" />
+    <ClCompile Include="scintilla\src\CellBuffer.cxx" />
+    <ClCompile Include="scintilla\src\ChangeHistory.cxx" />
+    <ClCompile Include="scintilla\src\CharacterCategoryMap.cxx" />
+    <ClCompile Include="scintilla\src\CharacterType.cxx" />
+    <ClCompile Include="scintilla\src\CharClassify.cxx" />
+    <ClCompile Include="scintilla\src\ContractionState.cxx" />
+    <ClCompile Include="scintilla\src\DBCS.cxx" />
+    <ClCompile Include="scintilla\src\Decoration.cxx" />
+    <ClCompile Include="scintilla\src\Document.cxx" />
+    <ClCompile Include="scintilla\src\EditModel.cxx" />
+    <ClCompile Include="scintilla\src\Editor.cxx" />
+    <ClCompile Include="scintilla\src\EditView.cxx" />
+    <ClCompile Include="scintilla\src\Geometry.cxx" />
+    <ClCompile Include="scintilla\src\Indicator.cxx" />
+    <ClCompile Include="scintilla\src\KeyMap.cxx" />
+    <ClCompile Include="scintilla\src\LineMarker.cxx" />
+    <ClCompile Include="scintilla\src\MarginView.cxx" />
+    <ClCompile Include="scintilla\src\PerLine.cxx" />
+    <ClCompile Include="scintilla\src\PositionCache.cxx" />
+    <ClCompile Include="scintilla\src\RESearch.cxx" />
+    <ClCompile Include="scintilla\src\RunStyles.cxx" />
+    <ClCompile Include="scintilla\src\ScintillaBase.cxx" />
+    <ClCompile Include="scintilla\src\Selection.cxx" />
+    <ClCompile Include="scintilla\src\Style.cxx" />
+    <ClCompile Include="scintilla\src\UndoHistory.cxx" />
+    <ClCompile Include="scintilla\src\UniConversion.cxx" />
+    <ClCompile Include="scintilla\src\UniqueString.cxx" />
+    <ClCompile Include="scintilla\src\ViewStyle.cxx" />
+    <ClCompile Include="scintilla\src\XPM.cxx" />
+    <!-- Scintilla win32 -->
+    <ClCompile Include="scintilla\win32\HanjaDic.cxx" />
+    <ClCompile Include="scintilla\win32\ListBox.cxx" />
+    <ClCompile Include="scintilla\win32\PlatWin.cxx" />
+    <ClCompile Include="scintilla\win32\ScintillaWin.cxx" />
+    <ClCompile Include="scintilla\win32\SurfaceD2D.cxx" />
+    <ClCompile Include="scintilla\win32\SurfaceGDI.cxx" />
+    <!-- Markdown Preview (nur TE) -->
+    <ClCompile Include="src\MarkdownPreview.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="src\WebView2Helper.cpp" Condition="$(Configuration.Contains('TE'))" />
+    <!-- cmark-gfm (nur TE) -->
+    <ClCompile Include="cmark-gfm\src\arena.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\blocks.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\buffer.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\cmark.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\cmark_ctype.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\commonmark.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\footnotes.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\houdini_href_e.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\houdini_html_e.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\houdini_html_u.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\html.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\inlines.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\iterator.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\latex.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\linked_list.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\man.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\map.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\node.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\plaintext.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\plugin.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\references.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\registry.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\render.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\scanners.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\syntax_extension.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\utf8.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\src\xml.c" Condition="$(Configuration.Contains('TE'))" />
+    <!-- cmark-gfm extensions (nur TE) -->
+    <ClCompile Include="cmark-gfm\extensions\autolink.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\core-extensions.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\ext_scanners.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\strikethrough.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\table.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\tagfilter.c" Condition="$(Configuration.Contains('TE'))" />
+    <ClCompile Include="cmark-gfm\extensions\tasklist.c" Condition="$(Configuration.Contains('TE'))" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Dialogs.h" />
+    <ClInclude Include="src\Dlapi.h" />
+    <ClInclude Include="src\Edit.h" />
+    <ClInclude Include="src\Helpers.h" />
+    <ClInclude Include="src\TE.h" />
+    <ClInclude Include="src\Styles.h" />
+    <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\version.h" />
+    <ClInclude Include="scintilla\include\ILexer.h" />
+    <ClInclude Include="scintilla\include\Platform.h" />
+    <ClInclude Include="scintilla\include\SciLexer.h" />
+    <ClInclude Include="scintilla\include\Scintilla.h" />
+    <ClInclude Include="scintilla\include\ScintillaWidget.h" />
+    <ClInclude Include="scintilla\lexlib\Accessor.h" />
+    <ClInclude Include="scintilla\lexlib\CharacterSet.h" />
+    <ClInclude Include="scintilla\lexlib\LexAccessor.h" />
+    <ClInclude Include="scintilla\lexlib\LexerBase.h" />
+    <ClInclude Include="scintilla\lexlib\LexerModule.h" />
+    <ClInclude Include="scintilla\lexlib\LexerSimple.h" />
+    <ClInclude Include="scintilla\lexlib\OptionSet.h" />
+    <ClInclude Include="scintilla\lexlib\PropSetSimple.h" />
+    <ClInclude Include="scintilla\lexlib\StyleContext.h" />
+    <ClInclude Include="scintilla\lexlib\WordList.h" />
+    <ClInclude Include="scintilla\src\AutoComplete.h" />
+    <ClInclude Include="scintilla\src\CallTip.h" />
+    <ClInclude Include="scintilla\src\Catalogue.h" />
+    <ClInclude Include="scintilla\src\CellBuffer.h" />
+    <ClInclude Include="scintilla\src\CharClassify.h" />
+    <ClInclude Include="scintilla\src\ContractionState.h" />
+    <ClInclude Include="scintilla\src\Decoration.h" />
+    <ClInclude Include="scintilla\src\Document.h" />
+    <ClInclude Include="scintilla\src\Editor.h" />
+    <ClInclude Include="scintilla\src\ExternalLexer.h" />
+    <ClInclude Include="scintilla\src\FontQuality.h" />
+    <ClInclude Include="scintilla\src\Indicator.h" />
+    <ClInclude Include="scintilla\src\KeyMap.h" />
+    <ClInclude Include="scintilla\src\LineMarker.h" />
+    <ClInclude Include="scintilla\src\Partitioning.h" />
+    <ClInclude Include="scintilla\src\PerLine.h" />
+    <ClInclude Include="scintilla\src\PositionCache.h" />
+    <ClInclude Include="scintilla\src\RESearch.h" />
+    <ClInclude Include="scintilla\src\RunStyles.h" />
+    <ClInclude Include="scintilla\src\SVector.h" />
+    <ClInclude Include="scintilla\src\ScintillaBase.h" />
+    <ClInclude Include="scintilla\src\Selection.h" />
+    <ClInclude Include="scintilla\src\SplitVector.h" />
+    <ClInclude Include="scintilla\src\Style.h" />
+    <ClInclude Include="scintilla\src\UniConversion.h" />
+    <ClInclude Include="scintilla\src\ViewStyle.h" />
+    <ClInclude Include="scintilla\src\XPM.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\Copy.cur" />
+    <None Include="src\TE.ver" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Encoding.bmp" />
+    <Image Include="res\Next.bmp" />
+    <Image Include="res\Open.bmp" />
+    <Image Include="res\Prev.bmp" />
+    <Image Include="res\Run.ico" />
+    <Image Include="res\Styles.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\TE.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
