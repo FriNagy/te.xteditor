@@ -1,6 +1,6 @@
 # TE - Text Editor
 
-A lightweight, open-source text editor for Windows with syntax highlighting, based on the [Scintilla](https://www.scintilla.org/) editing component. TE serves as a modern Notepad replacement for NT-based Windows systems.
+A lightweight, open-source text editor for Windows with syntax highlighting, based on the [Scintilla](https://www.scintilla.org/) editing component. Primarily designed for the cURL Programming Script language (.CPS), with additional support for DataFlex, display of lists, RTF, Markdown, and HTML in view mode. TE also serves as a modern Notepad replacement for NT-based Windows systems.
 
 ## Features
 
