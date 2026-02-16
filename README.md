@@ -1,16 +1,17 @@
 # TE - Text Editor
 
-A lightweight, open-source text editor for Windows with syntax highlighting, based on the [Scintilla](https://www.scintilla.org/) editing component. Primarily designed for the cURL Programming Script language (.CPS), with additional support for DataFlex, display of lists, RTF, Markdown, and HTML in view mode. TE also serves as a modern Notepad replacement for NT-based Windows systems.
+A lightweight, open-source text editor for Windows with syntax highlighting, based on the [Scintilla](https://www.scintilla.org/) editing component. Primarily designed for the cURL Programming Script language (.CPS), with additional support for DataFlex, display of lists, RTF, Markdown, and HTML in view mode. 
 
 ## Features
 
-- Syntax highlighting for 20+ languages (C/C++, HTML, CSS, JavaScript, SQL, JSON, Markdown, and more)
-- Multiple encoding support (UTF-8, UTF-16 LE/BE, ANSI, OEM, 50+ code pages)
+- Designed for my custom Curl scripting engine with built-in run-and-try execution.
+- Syntax highlighting  (SQL, JSON, XML, Markdown, BAT, CPS, F2T) 
+- Multiple encoding support (UTF-8, UTF-16 )
 - Find and Replace with regular expressions
 - Code folding
 - Line numbering and bookmarks
 - Auto-indentation
-- Markdown preview (via WebView2)
+- Markdown preview (via WebView2) HTML, RTF
 - Customizable color schemes and fonts
 - Portable - no installation required
 - Low memory footprint
