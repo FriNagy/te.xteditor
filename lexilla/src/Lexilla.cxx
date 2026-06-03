@@ -27,6 +27,7 @@ extern const LexerModule lmMake;
 extern const LexerModule lmHTML;
 extern const LexerModule lmJSON;
 extern const LexerModule lmF2T;     // Custom F2T/Flex2Text lexer
+extern const LexerModule lmF2P;     // Custom Flex2PDF template lexer
 #ifdef BUILD_TE
 extern const LexerModule lmCPS;     // Custom CPS/Curli script lexer (nur TU)
 extern const LexerModule lmMarkdown; // nur TU
@@ -47,6 +48,7 @@ static void InitCatalogue() {
 		AddModule(&lmHTML);
 		AddModule(&lmJSON);
 		AddModule(&lmF2T);
+		AddModule(&lmF2P);
 #ifdef BUILD_TE
 		AddModule(&lmCPS);
 		AddModule(&lmMarkdown);

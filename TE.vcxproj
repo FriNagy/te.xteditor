@@ -110,6 +110,7 @@
     <ClCompile Include="lexilla\lexers\LexBatch.cxx" />
     <ClCompile Include="lexilla\lexers\LexCPS.cxx" Condition="$(Configuration.Contains('TE'))" />
     <ClCompile Include="lexilla\lexers\LexF2T.cxx" />
+    <ClCompile Include="lexilla\lexers\LexF2P.cxx" />
     <ClCompile Include="lexilla\lexers\LexHTML.cxx" />
     <ClCompile Include="lexilla\lexers\LexJSON.cxx" />
     <ClCompile Include="lexilla\lexers\LexBasic.cxx" />

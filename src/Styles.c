@@ -82,6 +82,26 @@ void* __stdcall CreateLexer(const char *name);
 #define SCE_F2T_HOKEND_BIG 15   // NBS + Space + NBSpace
 #define SCE_F2T_LTGRAY_BIG 16   // NBS + Space + Tab
 
+// Custom lexer for F2P (Flex2PDF template) - must match LexF2P.cxx
+#define SCLEX_F2P 202
+#define SCE_F2P_DEFAULT    0   // body text (printed verbatim)
+#define SCE_F2P_COMMENT    1   // [=/ comment line
+#define SCE_F2P_HEADER     2   // [=) head/setup line (first line)
+#define SCE_F2P_SETUP      3   // [= positioning/setup
+#define SCE_F2P_PDF        4   // [=pdf, metadata/bookmarks
+#define SCE_F2P_BLOCKDEF   5   // [==,X, template definition
+#define SCE_F2P_OBJECT     6   // [x graphic object
+#define SCE_F2P_COLUMN     7   // [: / [. columns/tabs
+#define SCE_F2P_CONDITION  8   // [? multi-column / space layout
+#define SCE_F2P_FORMAT     9   // format shortcuts [F [f [B [S [0
+#define SCE_F2P_BLOCKCALL 10   // block/template call [P [7 [Z [I
+#define SCE_F2P_LINEFEED  11   // [l [l- [pp [Pp [PP feed/page break
+#define SCE_F2P_VPECODE   12   // VPE inline code [ ... ] with ]
+#define SCE_F2P_VARIABLE  13   // [=%, def + placeholders %a %g %%% [%x
+#define SCE_F2P_RTF       14   // embedded RTF string {\rtf1 ... }
+#define SCE_F2P_FLOWBLOCK 15   // \== ... /== keep-together marker
+#define SCE_F2P_OPERATOR  16   // reserved (unused)
+
 // Helper function to get lexer name from SCLEX_* constant
 static const char* GetLexerNameFromID(int lexerId) {
   switch (lexerId) {
@@ -89,6 +109,7 @@ static const char* GetLexerNameFromID(int lexerId) {
     case SCLEX_SQL: return "sql";
     case SCLEX_BATCH: return "batch";
     case SCLEX_F2T: return "f2t"; // Custom F2T lexer
+    case SCLEX_F2P: return "f2p"; // Custom F2P (Flex2PDF) lexer
     case SCLEX_XML: return "hypertext";  // XML uses hypertext lexer
     case SCLEX_JSON: return "json";
     case SCLEX_PASCAL: return "pascal";
@@ -280,6 +301,30 @@ EDITLEXER lexCPS =    { SCLEX_CPS, 63015, L"Curl Program Script", L"cps; cpu; cp
 #endif
 
 
+// F2P (Flex2PDF template) - rule-based lexer, empty keyword list
+KEYWORDLIST KeyWords_F2P = {
+"", "", "", "", "", "", "", "", "" };
+
+EDITLEXER lexF2P = { SCLEX_F2P, 63017, L"Flex2PDF Template", L"f2p", L"", &KeyWords_F2P, {
+                     { STYLE_DEFAULT,     63126, L"Default",            L"",                                 L"" },
+                     { SCE_F2P_COMMENT,   63127, L"Comment",            L"fore:#008000; italic",             L"" },
+                     { SCE_F2P_HEADER,    63258, L"Header [=)",         L"fore:#800080; bold",               L"" },
+                     { SCE_F2P_SETUP,     63128, L"Setup [=",           L"fore:#0000C0",                     L"" },
+                     { SCE_F2P_PDF,       63015, L"PDF Meta [=pdf",     L"fore:#008080; bold",               L"" },
+                     { SCE_F2P_BLOCKDEF,  63235, L"Template Def [==",   L"fore:#8B4513; back:#F4ECE3; bold",  L"" },
+                     { SCE_F2P_OBJECT,    63129, L"Object [x",          L"fore:#00008B; bold",               L"" },
+                     { SCE_F2P_COLUMN,    63131, L"Column [: [.",       L"fore:#C86400",                     L"" },
+                     { SCE_F2P_CONDITION, 63256, L"Condition [?",       L"fore:#AA00AA; bold",               L"" },
+                     { SCE_F2P_FORMAT,    63132, L"Format [F [0",       L"fore:#C80000; bold",               L"" },
+                     { SCE_F2P_BLOCKCALL, 63257, L"Block Call [P [7",   L"fore:#6000C0; bold",               L"" },
+                     { SCE_F2P_LINEFEED,  63250, L"Linefeed/Break",     L"fore:#909090",                     L"" },
+                     { SCE_F2P_VPECODE,   63251, L"VPE Inline [ ]",     L"fore:#707070; back:#F0F4F8",       L"" },
+                     { SCE_F2P_VARIABLE,  63249, L"Variable / %ph",     L"fore:#FF0000; back:#FFFF00",       L"" },
+                     { SCE_F2P_RTF,       63259, L"RTF Block",          L"fore:#606060; back:#F5F5F5",       L"" },
+                     { SCE_F2P_FLOWBLOCK, 63236, L"Flow \\== /==",      L"fore:#800080; bold",               L"" },
+                     { -1, 00000, L"", L"", L"" } } };
+
+
 KEYWORDLIST KeyWords_BAT = {
 "break call cd chcp chdir choice cls color com con copy country date defined del dir "
 "disabledelayedexpansion disableextensions do doskey echo else enabledelayedexpansion "
@@ -379,6 +424,7 @@ PEDITLEXER pLexArray[NUMLEXERS] =
   &lexXML,
   &lexJSON,
   &lexF2T,
+  &lexF2P,
   &lexSQL,
   &lexBAT,
 #ifdef BUILD_TE
@@ -1139,6 +1185,12 @@ void Style_SetLexerFromFile(HWND hwnd,LPCWSTR lpszFile)
 	  if (*lpszExt == L'.')  lpszExt++;
 
 	  if (lpszExt[0] == 'f' || lpszExt[0] == 'F')  {
+		  if (lpszExt[1] == '2' &&
+		      (lpszExt[2] == 'p' || lpszExt[2] == 'P') && lpszExt[3] == L'\0')  {
+		  pLexNew = &lexF2P;   // .f2p -> Flex2PDF template lexer
+		  Style_SetLexer(hwnd, pLexNew);
+		  return ;
+		  };
 		  if (lpszExt[1] == '2')  {
 		  pLexNew = &lexF2T;
 		  Style_SetLexer(hwnd, pLexNew);

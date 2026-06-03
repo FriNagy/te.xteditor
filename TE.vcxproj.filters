@@ -228,6 +228,9 @@
     <ClCompile Include="lexilla\lexers\LexF2T.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="lexilla\lexers\LexF2P.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="lexilla\lexers\LexHTML.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
