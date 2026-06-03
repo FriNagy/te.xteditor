@@ -152,6 +152,33 @@ bool IsFileOpStartLine(Accessor &styler, Sci_Position line) {
     return false;
 }
 
+// Check if line starts with <! (after optional whitespace)
+bool LineStartsEditMarker(Accessor &styler, Sci_Position line) {
+    Sci_Position startPos = styler.LineStart(line);
+    Sci_Position endPos = styler.LineStart(line + 1);
+    Sci_Position i = startPos;
+    while (i < endPos && (styler[i] == ' ' || styler[i] == '\t')) i++;
+    return (i + 1 < endPos && styler[i] == '<' && styler[i + 1] == '!');
+}
+
+// Check if line contains -> anywhere (closing delimiter)
+bool LineContainsEditMarkerClose(Accessor &styler, Sci_Position line) {
+    Sci_Position startPos = styler.LineStart(line);
+    Sci_Position endPos = styler.LineStart(line + 1);
+    for (Sci_Position i = startPos; i + 1 < endPos; i++) {
+        if (styler[i] == '-' && styler[i + 1] == '>') return true;
+    }
+    return false;
+}
+
+// Find position of -> within [from, to), returns (Sci_PositionU)-1 if not found
+Sci_PositionU FindEditMarkerClose(Accessor &styler, Sci_PositionU from, Sci_PositionU to) {
+    for (Sci_PositionU i = from; i + 1 < to; i++) {
+        if (styler[i] == '-' && styler[i + 1] == '>') return i;
+    }
+    return (Sci_PositionU)-1;
+}
+
 // Detect markdown mode: first non-empty line starts with #
 bool DetectMarkdownMode(Accessor &styler, Sci_PositionU docEnd) {
     Sci_Position numLines = styler.GetLine(docEnd > 0 ? docEnd - 1 : 0);
@@ -231,6 +258,12 @@ void StyleBlockContent(Accessor &styler, Sci_PositionU &i, Sci_PositionU lineEnd
             while (varEnd < lineEndPos && IsVarNameChar(styler[varEnd])) varEnd++;
             styler.ColourTo(varEnd - 1, varStyle);
             i = varEnd;
+        } else if (styler[i] == ':' && i + 1 < lineEndPos && IsLabelStartChar(styler[i + 1])) {
+            // :labelname reference — highlight as label (e.g. error-goto targets, line-start markers)
+            Sci_PositionU labelEnd = i + 1;
+            while (labelEnd < lineEndPos && IsLabelChar(styler[labelEnd])) labelEnd++;
+            styler.ColourTo(labelEnd - 1, SCE_CPS_LABEL);
+            i = labelEnd;
         } else {
             styler.ColourTo(i, baseStyle);
             i++;
@@ -267,6 +300,24 @@ void ColouriseCPSDoc(
         }
     }
 
+    // Determine if we're inside a <- ... -> edit marker block
+    bool inEditMarker = false;
+    if (startLine > 0) {
+        for (Sci_Position line = startLine - 1; line >= 0; line--) {
+            if (LineStartsEditMarker(styler, line)) {
+                // Opening line: in block only if -> is NOT also on this line
+                if (!LineContainsEditMarkerClose(styler, line)) {
+                    inEditMarker = true;
+                }
+                break;
+            }
+            if (LineContainsEditMarkerClose(styler, line)) {
+                // A closing -> was found before any <-: not in block
+                break;
+            }
+        }
+    }
+
     styler.StartAt(startPos);
     styler.StartSegment(startPos);
 
@@ -278,6 +329,23 @@ void ColouriseCPSDoc(
         // Get current line boundaries
         Sci_PositionU lineEndPos = styler.LineStart(currentLine + 1);
         if (lineEndPos > endPos) lineEndPos = endPos;
+
+        // ===== Inside <- ... -> edit marker (multi-line comment) =====
+        if (inEditMarker) {
+            i = lineStartPos;
+            Sci_PositionU closePos = FindEditMarkerClose(styler, lineStartPos, lineEndPos);
+            if (closePos != (Sci_PositionU)-1) {
+                // -> found: color rest of line as COMMENT, close block
+                styler.ColourTo(lineEndPos - 1, SCE_CPS_COMMENT);
+                inEditMarker = false;
+            } else {
+                styler.ColourTo(lineEndPos - 1, SCE_CPS_COMMENT);
+            }
+            i = lineEndPos;
+            currentLine++;
+            lineStartPos = lineEndPos;
+            continue;
+        }
 
         // Check if this is an empty line
         bool isEmptyLine = true;
@@ -318,9 +386,16 @@ void ColouriseCPSDoc(
             continue;
         }
 
-        // ===== HTML comment: <! at line start =====
+        // ===== HTML edit marker: <! ... -> (possibly multi-line) =====
         if (firstChar == '<' && secondChar == '!') {
             inFileOpBlock = false;
+            i = lineStartPos;
+            Sci_PositionU closePos = FindEditMarkerClose(styler, lineStartPos, lineEndPos);
+            if (closePos == (Sci_PositionU)-1) {
+                // No -> on this line: block continues on next lines
+                inEditMarker = true;
+            }
+            // Color entire opening line as COMMENT
             styler.ColourTo(lineEndPos - 1, SCE_CPS_COMMENT);
             i = lineEndPos;
             currentLine++;
@@ -429,8 +504,24 @@ void ColouriseCPSDoc(
                 styler.ColourTo(i, SCE_CPS_COMMAND);
                 i++;
             }
-            // Rest of line as FILEOP with variable expansion
-            StyleBlockContent(styler, i, lineEndPos, SCE_CPS_FILEOP);
+            // Scan rest of line for error-goto switch: space + "-e" (e.g. -eh :label1 :label2)
+            // Must be preceded by whitespace to avoid matching "-e" inside URLs
+            Sci_PositionU errorSwitchPos = (Sci_PositionU)-1;
+            for (Sci_PositionU j = i; j + 2 < lineEndPos; j++) {
+                if ((styler[j] == ' ' || styler[j] == '\t') &&
+                     styler[j + 1] == '-' && styler[j + 2] == 'e') {
+                    errorSwitchPos = j + 1;  // position of '-'
+                    break;
+                }
+            }
+            if (errorSwitchPos != (Sci_PositionU)-1) {
+                // Style URL/content part as FILEOP, then -e[h] + :labels as LABEL
+                StyleBlockContent(styler, i, errorSwitchPos, SCE_CPS_FILEOP);
+                styler.ColourTo(lineEndPos - 1, SCE_CPS_LABEL);
+                i = lineEndPos;
+            } else {
+                StyleBlockContent(styler, i, lineEndPos, SCE_CPS_FILEOP);
+            }
             currentLine++;
             lineStartPos = lineEndPos;
             continue;
@@ -439,7 +530,14 @@ void ColouriseCPSDoc(
         // ===== Inside !> block continuation lines =====
         if (inFileOpBlock) {
             i = lineStartPos;
-            StyleBlockContent(styler, i, lineEndPos, SCE_CPS_FILEOP);
+            if (firstChar == ':') {
+                // Any line starting with : is visually distinct (key/marker line)
+                while (i < linePos) { styler.ColourTo(i, SCE_CPS_DEFAULT); i++; }
+                styler.ColourTo(lineEndPos - 1, SCE_CPS_LABEL);
+                i = lineEndPos;
+            } else {
+                StyleBlockContent(styler, i, lineEndPos, SCE_CPS_FILEOP);
+            }
             currentLine++;
             lineStartPos = lineEndPos;
             continue;

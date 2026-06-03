@@ -51,10 +51,10 @@
 
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright 2024"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"TE Project"
-#define VERSION_WEBPAGEDISPLAY       L""
+#define VERSION_WEBPAGEDISPLAY       L"https://github.com/FriNagy/te.xteditor"
 
 #define VERSION_INTERNALNAME  Lproname L".exe"
 
 #define VERSION_ORIGINALFILENAME Lproname L".exe"
 
-#define VERSION_AUTHORNAME           L""
+#define VERSION_AUTHORNAME           L"FriNagy"

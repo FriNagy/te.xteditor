@@ -28,6 +28,9 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "HtmlClipboard.h"
+#include <urlmon.h>
+#pragma comment(lib, "urlmon.lib")
 
 
 
@@ -851,6 +854,48 @@ HWND InitInstance(HINSTANCE hInstance,LPSTR pszCmdLine,int nCmdShow)
   {
     BOOL bOpened = FALSE;
 
+    // URL support: download to temp file first
+    if (wcsnicmp(lpFileArg, L"http://", 7) == 0 || wcsnicmp(lpFileArg, L"https://", 8) == 0) {
+      WCHAR tchTempPath[MAX_PATH];
+      WCHAR tchTempFile[MAX_PATH];
+      GetTempPath(COUNTOF(tchTempPath), tchTempPath);
+
+      // Derive extension from last path segment only (ignore domain dots)
+      LPCWSTR pszExt = L".html";  // default
+      LPCWSTR pszLastSlash = wcsrchr(lpFileArg, L'/');
+      if (pszLastSlash) {
+        LPCWSTR pszDot = wcsrchr(pszLastSlash, L'.');
+        if (pszDot) {
+          LPCWSTR pszEnd = pszDot;
+          while (*pszEnd && *pszEnd != L'?' && *pszEnd != L'#' && *pszEnd != L'(' && *pszEnd != L')') pszEnd++;
+          int extLen = (int)(pszEnd - pszDot);
+          if (extLen >= 2 && extLen <= 6) pszExt = pszDot;
+        }
+      }
+
+      GetTempFileName(tchTempPath, L"te_", 0, tchTempFile);
+      // Append proper extension
+      WCHAR tchFinalFile[MAX_PATH];
+      lstrcpy(tchFinalFile, tchTempFile);
+      // Replace .tmp extension with URL-derived one
+      LPWSTR pTmpExt = PathFindExtension(tchFinalFile);
+      if (pTmpExt) {
+        int extLen = 0;
+        LPCWSTR pe = pszExt;
+        while (*pe && *pe != L'?' && *pe != L'#' && *pe != L'(' && *pe != L')' && extLen < 6) { pTmpExt[extLen] = *pe; pe++; extLen++; }
+        pTmpExt[extLen] = L'\0';
+      }
+      // Try renaming temp file
+      MoveFile(tchTempFile, tchFinalFile);
+
+      HRESULT hr = URLDownloadToFile(NULL, lpFileArg, tchFinalFile, 0, NULL);
+      if (SUCCEEDED(hr)) {
+        GlobalFree(lpFileArg);
+        lpFileArg = GlobalAlloc(GPTR, sizeof(WCHAR) * (MAX_PATH + 2));
+        lstrcpy(lpFileArg, tchFinalFile);
+      }
+    }
+
     // Open from Directory
     if (PathIsDirectory(lpFileArg)) {
       WCHAR tchFile[MAX_PATH];
@@ -1216,6 +1261,24 @@ LRESULT CALLBACK MainWndProc(HWND hwnd,UINT umsg,WPARAM wParam,LPARAM lParam)
     case WM_SIZE:
       MsgSize(hwnd,wParam,lParam);
       break;
+
+
+    case WM_GETMINMAXINFO:
+    {
+      MINMAXINFO* mmi = (MINMAXINFO*)lParam;
+      HMONITOR hMon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+      MONITORINFO mi;
+      mi.cbSize = sizeof(MONITORINFO);
+      if (GetMonitorInfo(hMon, &mi)) {
+        RECT w = mi.rcWork;
+        RECT m = mi.rcMonitor;
+        mmi->ptMaxPosition.x = w.left - m.left;
+        mmi->ptMaxPosition.y = w.top  - m.top;
+        mmi->ptMaxSize.x     = w.right  - w.left;
+        mmi->ptMaxSize.y     = w.bottom - w.top;
+      }
+      return 0;
+    }
 
 
     case WM_SETFOCUS:
@@ -2721,11 +2784,17 @@ LRESULT MsgCommand(HWND hwnd,WPARAM wParam,LPARAM lParam)
         if (!FileSave(FALSE,TRUE,FALSE,FALSE))
           break;
 
-        // Look for CPS.exe in same directory as the script
+        // Derive exe name from file extension: .cps->CPS.exe, .cpy->CPY.exe, .cpx->CPX.exe
+        WCHAR tchExeName[16];
+        lstrcpy(tchExeName, ext + 1);  // skip the dot: "cps", "cpy", "cpx"
+        CharUpper(tchExeName);
+        lstrcat(tchExeName, L".exe");
+
+        // Look for exe in same directory as the script
         lstrcpy(tchDirectory, szCurFile);
         PathRemoveFileSpec(tchDirectory);
         lstrcpy(tchCpsExe, tchDirectory);
-        PathAppend(tchCpsExe, L"CPS.exe");
+        PathAppend(tchCpsExe, tchExeName);
 
         // If not found next to script, try same dir as TE.exe
         if (!PathFileExists(tchCpsExe)) {
@@ -2733,12 +2802,15 @@ LRESULT MsgCommand(HWND hwnd,WPARAM wParam,LPARAM lParam)
           GetModuleFileName(NULL, tchExeDir, MAX_PATH);
           PathRemoveFileSpec(tchExeDir);
           lstrcpy(tchCpsExe, tchExeDir);
-          PathAppend(tchCpsExe, L"CPS.exe");
+          PathAppend(tchCpsExe, tchExeName);
         }
 
-        // If still not found, try PATH
+        // If still not found, show error and abort
         if (!PathFileExists(tchCpsExe)) {
-          lstrcpy(tchCpsExe, L"CPS.exe");
+          WCHAR tchMsg[MAX_PATH + 64];
+          wsprintf(tchMsg, L"%s not found.", tchExeName);
+          MsgBox(MBWARN, tchMsg);
+          break;
         }
 
         // Build parameters: just the script filename
@@ -3029,7 +3101,7 @@ LRESULT MsgCommand(HWND hwnd,WPARAM wParam,LPARAM lParam)
       // If nothing selected, copy the entire line
       if (SendMessage(hwndEdit,SCI_GETSELECTIONSTART,0,0) == SendMessage(hwndEdit,SCI_GETSELECTIONEND,0,0))
         SendMessage(hwndEdit,SCI_LINECOPY,0,0);
-      else
+      else if (!CopySelectionAsHtml(hwndEdit,hwndMain))
         SendMessage(hwndEdit,SCI_COPY,0,0);
 
       break;
@@ -7295,6 +7367,130 @@ BOOL FileLoad(BOOL bDontSave,BOOL bNew,BOOL bReload,BOOL bNoEncDetect,LPCWSTR lp
 
 //=============================================================================
 //
+//  CpsUpdateChangedMarker()
+//
+//  For .cps/.cpu/.cpy/.cpx files: find first <! ... -> block, update
+//  "changed am:" line with current date/time, user and machine name.
+//  Called before saving when bModified is true.
+//
+static void CpsUpdateChangedMarker(void)
+{
+  char*    p;
+  char*    q;
+  char*    blockStart;
+  char*    blockClose;
+  char*    changedLine;
+  char*    changedLineEnd;
+  char*    firstLine;
+  BOOL     isHtmlStyle;
+  WPARAM   lineStart;
+  WPARAM   lineEnd;
+  SYSTEMTIME st;
+  WCHAR    wUser[256];
+  WCHAR    wMachine[256];
+  DWORD    dwUser;
+  DWORD    dwMachine;
+  char     szUser[256];
+  char     szMachine[256];
+  char     szNew[512];
+  int      docLen;
+  char*    pText;
+
+  if (!bModified) return;
+  if (!lstrlen(szCurFile)) return;
+
+  {
+    LPCWSTR ext = PathFindExtension(szCurFile);
+    if (!ext || (_wcsicmp(ext, L".cps") != 0 &&
+                 _wcsicmp(ext, L".cpu") != 0 &&
+                 _wcsicmp(ext, L".cpy") != 0 &&
+                 _wcsicmp(ext, L".cpx") != 0))
+      return;
+  }
+
+  docLen = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
+  if (docLen <= 0 || docLen > 2 * 1024 * 1024) return;
+
+  pText = (char*)HeapAlloc(GetProcessHeap(), 0, docLen + 1);
+  if (!pText) return;
+  SendMessage(hwndEdit, SCI_GETTEXT, (WPARAM)(docLen + 1), (LPARAM)pText);
+  pText[docLen] = '\0';
+
+  // Find first non-empty line (skip leading blank lines)
+  firstLine = pText;
+  while (*firstLine) {
+    q = firstLine;
+    while (*q == ' ' || *q == '\t') q++;
+    if (*q != '\r' && *q != '\n') { firstLine = q; break; }
+    while (*firstLine && *firstLine != '\n') firstLine++;
+    if (*firstLine == '\n') firstLine++;
+  }
+
+  // Gate: only proceed if file starts with <! or //
+  isHtmlStyle = (firstLine[0] == '<' && firstLine[1] == '!');
+  if (!isHtmlStyle && !(firstLine[0] == '/' && firstLine[1] == '/')) {
+    HeapFree(GetProcessHeap(), 0, pText);
+    return;
+  }
+
+  // Determine block boundaries
+  blockStart = firstLine;
+  blockClose = NULL;
+
+  if (isHtmlStyle) {
+    // <! ... -> block
+    blockClose = strstr(firstLine + 2, "->");
+    if (!blockClose) { HeapFree(GetProcessHeap(), 0, pText); return; }
+    blockClose += 2;
+  }
+  else {
+    // Consecutive // lines at the top
+    p = firstLine;
+    while (*p) {
+      while (*p && *p != '\n') p++;
+      if (*p == '\n') p++;
+      q = p;
+      while (*q == ' ' || *q == '\t') q++;
+      if (q[0] != '/' || q[1] != '/') { blockClose = p; break; }
+    }
+    if (!blockClose) blockClose = pText + docLen;
+  }
+
+  // Search for "changed am:" within the block (case-insensitive)
+  changedLine    = NULL;
+  changedLineEnd = NULL;
+  for (p = blockStart; p < blockClose; p++) {
+    if (_strnicmp(p, "changed am:", 11) == 0) {
+      changedLine    = p;
+      changedLineEnd = p;
+      while (*changedLineEnd && *changedLineEnd != '\r' && *changedLineEnd != '\n')
+        changedLineEnd++;
+      break;
+    }
+  }
+  if (!changedLine) { HeapFree(GetProcessHeap(), 0, pText); return; }
+
+  // Build replacement: date, user, machine
+  GetLocalTime(&st);
+  wUser[0] = L'\0';    dwUser    = 256; GetUserNameW(wUser, &dwUser);
+  wMachine[0] = L'\0'; dwMachine = 256; GetComputerNameW(wMachine, &dwMachine);
+  szUser[0]    = '\0'; WideCharToMultiByte(CP_UTF8, 0, wUser,    -1, szUser,    sizeof(szUser),    NULL, NULL);
+  szMachine[0] = '\0'; WideCharToMultiByte(CP_UTF8, 0, wMachine, -1, szMachine, sizeof(szMachine), NULL, NULL);
+
+  sprintf(szNew, "changed am: %04d-%02d-%02d %02d:%02d  user: %s  machine: %s",
+    st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, szUser, szMachine);
+
+  // Replace only the "changed am:..." span — cursor position unchanged
+  lineStart = (WPARAM)(changedLine    - pText);
+  lineEnd   = (WPARAM)(changedLineEnd - pText);
+  SendMessage(hwndEdit, SCI_SETTARGETSTART, lineStart, 0);
+  SendMessage(hwndEdit, SCI_SETTARGETEND,   lineEnd,   0);
+  SendMessage(hwndEdit, SCI_REPLACETARGET,  (WPARAM)-1, (LPARAM)szNew);
+
+  HeapFree(GetProcessHeap(), 0, pText);
+}
+
+
 //  FileSave()
 //
 //
@@ -7395,8 +7591,10 @@ BOOL FileSave(BOOL bSaveAlways,BOOL bAsk,BOOL bSaveAs,BOOL bSaveCopy)
       return FALSE;
   }
 
-  else
+  else {
+    CpsUpdateChangedMarker();
     fSuccess = FileIO(FALSE,szCurFile,FALSE,&iEncoding,&iEOLMode,NULL,NULL,&bCancelDataLoss,FALSE);
+  }
 
   if (fSuccess)
   {

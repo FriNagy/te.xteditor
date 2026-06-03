@@ -88,6 +88,7 @@
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\TE.c" />
     <ClCompile Include="src\Print.cpp" />
+    <ClCompile Include="src\HtmlClipboard.cpp" />
     <ClCompile Include="src\Styles.c" />
     <!-- Lexilla lexlib -->
     <ClCompile Include="lexilla\lexlib\Accessor.cxx" />

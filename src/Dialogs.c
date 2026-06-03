@@ -409,7 +409,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd,UINT umsg,WPARAM wParam,LPARAM lParam)
             break;
         case IDHELP:
            // ShellExecute(hwnd, L"open", L"https://www.Frigyes.net/my/Freeware.html", NULL, NULL, SW_SHOWNORMAL);
-            ShellExecute(hwnd, L"open", L"https://www.Frigy.es", NULL, NULL, SW_SHOWNORMAL);
+            ShellExecute(hwnd, L"open", L"https://github.com/FriNagy/te.xteditor", NULL, NULL, SW_SHOWNORMAL);
             break;
 	  }
       return TRUE;
